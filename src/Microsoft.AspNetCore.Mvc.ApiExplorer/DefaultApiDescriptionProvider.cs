@@ -162,7 +162,18 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 foreach (var actionParameter in context.ActionDescriptor.Parameters)
                 {
                     var visitor = new PseudoModelBindingVisitor(context, actionParameter);
-                    var metadata = _modelMetadataProvider.GetMetadataForType(actionParameter.ParameterType);
+
+                    ModelMetadata metadata = null;
+                    if (actionParameter is ControllerParameterDescriptor controllerParameterDescriptor &&
+                        _modelMetadataProvider is ModelMetadataProvider provider)
+                    {
+                        metadata = provider.GetMetadataForParameter(controllerParameterDescriptor.ParameterInfo);
+                    }
+
+                    if (metadata == null)
+                    {
+                        metadata = _modelMetadataProvider.GetMetadataForType(actionParameter.ParameterType);
+                    }
 
                     var bindingContext = ApiParameterDescriptionContext.GetContext(
                         metadata,
